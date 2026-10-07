@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta property="og:title" content="전북·전남광주 슈퍼차저 후보지">
+<meta property="og:description" content="테슬라 슈퍼차저 투표 2026년 3분기 후보 11곳 · 네이버 지도 바로가기">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<title>호남 슈퍼차저 후보지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 지도 왼쪽 + 득표순 목록 오른쪽, 폰에서는 지도 → 선택 카드 → 목록 순으로 쌓임 */
+:root{
+  --sea:#e6ecef; --land:#fbfbf8; --line:#c9d1d5; --nb:#eef1f1;
+  --bg:#f4f6f6; --panel:#ffffff; --fg:#1d2427; --muted:#5f6b70; --rule:#dde3e5;
+  --jb:#2f5f8f; --jb-fill:#dfe8f1; --jn:#b9551f; --jn-fill:#f5e6da;
+  --naver:#03a94d; --naver-fg:#ffffff;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --sea:#141b1f; --land:#222a2e; --line:#3a464c; --nb:#1b2226;
+  --bg:#101518; --panel:#192024; --fg:#e7ecee; --muted:#9aa7ad; --rule:#2c363b;
+  --jb:#7fb0e0; --jb-fill:#22344a; --jn:#ec9a68; --jn-fill:#3d2a1f;
+  --naver:#1fbf62; --naver-fg:#08130c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --sea:#141b1f; --land:#222a2e; --line:#3a464c; --nb:#1b2226;
+  --bg:#101518; --panel:#192024; --fg:#e7ecee; --muted:#9aa7ad; --rule:#2c363b;
+  --jb:#7fb0e0; --jb-fill:#22344a; --jn:#ec9a68; --jn-fill:#3d2a1f;
+  --naver:#1fbf62; --naver-fg:#08130c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.55;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px 40px;display:grid;gap:20px}
+header h1{font-size:clamp(22px,4vw,30px);line-height:1.25;margin:0 0 6px;font-weight:700;text-wrap:balance;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--panel);color:var(--fg);padding:6px 14px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip:focus-visible,.row:focus-visible,.btn:focus-visible{outline:2px solid var(--jb);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+.mapbox{background:var(--sea);border:1px solid var(--rule);border-radius:10px;overflow:hidden;position:relative}
+svg{display:block;width:100%;height:auto}
+.nb{fill:var(--nb);stroke:var(--line);stroke-width:1}
+.jb{fill:var(--jb-fill);stroke:var(--jb);stroke-width:1.4;stroke-opacity:.55}
+.jn{fill:var(--jn-fill);stroke:var(--jn);stroke-width:1.4;stroke-opacity:.55}
+.gj{stroke-dasharray:4 3;fill-opacity:.6}
+.lbl{font:700 26px var(--sans);fill:var(--muted);opacity:.75;text-anchor:middle;pointer-events:none}
+.lbl.sm{font-size:19px;opacity:.9}
+.lbl.far{font-size:20px;opacity:.45}
+.pin{cursor:pointer}
+.pin circle.dot{stroke:var(--land);stroke-width:3}
+.pin .ring{fill:none;stroke-width:3;stroke-dasharray:5 4}
+.pin text{font:500 19px var(--mono);fill:var(--fg);pointer-events:none;paint-order:stroke;stroke:var(--land);stroke-width:5px;stroke-linejoin:round}
+.pin.dim{opacity:.18}
+.pin.on circle.dot{stroke:var(--fg);stroke-width:4}
+.legend{position:absolute;left:12px;bottom:12px;background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;font-size:12.5px;color:var(--muted);display:grid;gap:4px}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:50%;display:inline-block}
+.sw.r{background:transparent;border:2px dashed var(--muted)}
+.side{display:grid;gap:16px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;display:grid;gap:10px}
+.card .tag{font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.card h2{margin:0;font-size:20px;line-height:1.3}
+.card .meta{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:500;font-size:14px;padding:9px 14px;border-radius:8px;border:1px solid var(--rule);color:var(--fg);background:var(--bg)}
+.btn.primary{background:var(--naver);color:var(--naver-fg);border-color:var(--naver)}
+.list{background:var(--panel);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.list h3{margin:0;padding:12px 18px;font-size:13px;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--rule);font-weight:500}
+.row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--rule);cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;font:inherit;color:inherit}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--bg)}
+.row[aria-current="true"]{background:var(--bg);box-shadow:inset 3px 0 0 var(--fg)}
+.rank{font-family:var(--mono);color:var(--muted);font-size:13px}
+.nm{min-width:0}
+.nm b{font-weight:500;display:block;overflow-wrap:anywhere}
+.nm small{color:var(--muted);font-size:12.5px}
+.v{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
+.notes{color:var(--muted);font-size:13px;display:grid;gap:4px;max-width:70ch}
+.notes p{margin:0}
+@media (prefers-reduced-motion:no-preference){.pin circle.dot{transition:r .2s}}
+#map{height:min(78vh,720px);min-height:420px;background:var(--sea)}
+@media (max-width:820px){#map{height:60vh}}
+.leaflet-container{font-family:var(--sans)}
+.tip{font:500 13px var(--sans)}
+.legend{z-index:500}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>전북·전남광주 슈퍼차저 후보지</h1>
+    <p>테슬라 슈퍼차저 투표 지도의 2026년 3분기 후보 11곳 · 2026.10.7 기준</p>
+  </header>
+
+  <div class="chips" role="group" aria-label="지역 필터">
+    <button class="chip" id="f-all" data-f="all" aria-pressed="true">전체 11</button>
+    <button class="chip" id="f-jb" data-f="전북" aria-pressed="false">전라북도 4</button>
+    <button class="chip" id="f-jn" data-f="전남광주" aria-pressed="false">전남광주 7</button>
+  </div>
+
+  <div class="grid">
+    <div class="mapbox">
+      <div id="map" role="region" aria-label="호남 지역 슈퍼차저 후보지 지도"></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--jb)"></i>전라북도</span>
+        <span><i class="sw" style="background:var(--jn)"></i>전남광주</span>
+        
+        <span>원 크기 = 득표수</span><span>지도 확대·이동 가능</span>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="card" id="card" aria-live="polite"></div>
+      <div class="list">
+        <h3>득표순</h3>
+        <div id="rows"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <p>한글 위치는 테슬라의 영문 지명과 좌표로 판단한 값입니다. 나주 석전리는 읍·면 단위를 확정하지 못했습니다.</p>
+    <p>‘테슬라 투표 지도’는 해당 후보지 주변을 테슬라 투표 페이지로 엽니다. 테슬라 계정으로 로그인하면 투표할 수 있습니다.</p>
+    <p>‘네이버 지도에서 검색’은 지명으로 검색해 핀을 보여 주고, ‘좌표로 열기’는 테슬라 좌표를 화면 중앙에 두고 엽니다.</p>
+    <p>출처: tesla.com/ko_KR/supercharger-voting</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const D = [{"id": 0, "region": "전북", "ko": "무주군 무주읍 가옥리", "en": "Gaok-ri", "lat": 35.9742, "lon": 127.65137, "votes": 386, "search": "https://map.naver.com/p/search/%EB%AC%B4%EC%A3%BC%EA%B5%B0%20%EB%AC%B4%EC%A3%BC%EC%9D%8D%20%EA%B0%80%EC%98%A5%EB%A6%AC", "coord": "https://map.naver.com/p?c=127.65137,35.9742,15,0,0,0,dh"}, {"id": 1, "region": "전북", "ko": "남원시", "en": "Namwon-si", "lat": 35.4162, "lon": 127.39046, "votes": 260, "search": "https://map.naver.com/p/search/%EB%82%A8%EC%9B%90%EC%8B%9C", "coord": "https://map.naver.com/p?c=127.39046,35.4162,15,0,0,0,dh"}, {"id": 2, "region": "전북", "ko": "군산시", "en": "Gunsan-si", "lat": 35.94937, "lon": 126.58523, "votes": 192, "search": "https://map.naver.com/p/search/%EA%B5%B0%EC%82%B0%EC%8B%9C", "coord": "https://map.naver.com/p?c=126.58523,35.94937,15,0,0,0,dh"}, {"id": 3, "region": "전북", "ko": "정읍시 고부면", "en": "Gobu-myeon", "lat": 35.58598, "lon": 126.74608, "votes": 175, "search": "https://map.naver.com/p/search/%EC%A0%95%EC%9D%8D%EC%8B%9C%20%EA%B3%A0%EB%B6%80%EB%A9%B4", "coord": "https://map.naver.com/p?c=126.74608,35.58598,15,0,0,0,dh"}, {"id": 4, "region": "전남광주", "ko": "완도군 완도읍 가용리", "en": "Gayong-ri", "lat": 34.31637, "lon": 126.76103, "votes": 282, "search": "https://map.naver.com/p/search/%EC%99%84%EB%8F%84%EA%B5%B0%20%EC%99%84%EB%8F%84%EC%9D%8D%20%EA%B0%80%EC%9A%A9%EB%A6%AC", "coord": "https://map.naver.com/p?c=126.76103,34.31637,15,0,0,0,dh"}, {"id": 5, "region": "전남광주", "ko": "함평군 함평읍 장교리", "en": "Janggyo-ri", "lat": 35.0691, "lon": 126.47807, "votes": 204, "search": "https://map.naver.com/p/search/%ED%95%A8%ED%8F%89%EA%B5%B0%20%ED%95%A8%ED%8F%89%EC%9D%8D%20%EC%9E%A5%EA%B5%90%EB%A6%AC", "coord": "https://map.naver.com/p?c=126.47807,35.0691,15,0,0,0,dh"}, {"id": 6, "region": "전남광주", "ko": "담양군 수북면", "en": "Subuk-myeon", "lat": 35.30052, "lon": 126.93177, "votes": 163, "search": "https://map.naver.com/p/search/%EB%8B%B4%EC%96%91%EA%B5%B0%20%EC%88%98%EB%B6%81%EB%A9%B4", "coord": "https://map.naver.com/p?c=126.93177,35.30052,15,0,0,0,dh"}, {"id": 7, "region": "전남광주", "ko": "나주시 석전리 일대", "en": "Seokjeon-ri", "lat": 35.02902, "lon": 126.78918, "votes": 163, "search": "https://map.naver.com/p/search/%EB%82%98%EC%A3%BC%EC%8B%9C%20%EC%84%9D%EC%A0%84%EB%A6%AC", "coord": "https://map.naver.com/p?c=126.78918,35.02902,15,0,0,0,dh"}, {"id": 8, "region": "전남광주", "ko": "진도군 의신면 초사리", "en": "Chosa-ri", "lat": 34.40098, "lon": 126.3268, "votes": 146, "search": "https://map.naver.com/p/search/%EC%A7%84%EB%8F%84%EA%B5%B0%20%EC%9D%98%EC%8B%A0%EB%A9%B4%20%EC%B4%88%EC%82%AC%EB%A6%AC", "coord": "https://map.naver.com/p?c=126.3268,34.40098,15,0,0,0,dh"}, {"id": 9, "region": "전남광주", "ko": "고흥군 영남면 남열리", "en": "Namyeol-ri", "lat": 34.58503, "lon": 127.4922, "votes": 136, "search": "https://map.naver.com/p/search/%EA%B3%A0%ED%9D%A5%EA%B5%B0%20%EC%98%81%EB%82%A8%EB%A9%B4%20%EB%82%A8%EC%97%B4%EB%A6%AC", "coord": "https://map.naver.com/p?c=127.4922,34.58503,15,0,0,0,dh"}, {"id": 10, "region": "전남광주", "ko": "영암군 영암읍 동무리", "en": "Dongmu-ri", "lat": 34.80478, "lon": 126.70143, "votes": 126, "search": "https://map.naver.com/p/search/%EC%98%81%EC%95%94%EA%B5%B0%20%EC%98%81%EC%95%94%EC%9D%8D%20%EB%8F%99%EB%AC%B4%EB%A6%AC", "coord": "https://map.naver.com/p?c=126.70143,34.80478,15,0,0,0,dh"}];
+let filter="all", sel=D[0].id;
+const maxV=Math.max(...D.map(d=>d.votes));
+const rad=v=>9+16*Math.sqrt(v/maxV);
+const col=r=>r==="전북"?"var(--jb)":"var(--jn)";
+const byVotes=[...D].sort((a,b)=>b.votes-a.votes);
+
+function shortName(d){const p=d.ko.replace(" 일대","").split(" ");return p.length>1?p[0].replace(/(시|군)$/,"")+" "+p[p.length-1]:p[0];}
+
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const map=L.map("map",{scrollWheelZoom:true,zoomSnap:0.5}).fitBounds([[34.2,126.2],[36.05,127.75]],{padding:[10,10]});
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{maxZoom:18,subdomains:"abcd",attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+const mk={};
+D.forEach(d=>{
+  const ring=false?L.circleMarker([d.lat,d.lon],{radius:rad(d.votes)+6,fill:false,weight:2.5,dashArray:"4 4",interactive:false}).addTo(map):null;
+  const m=L.circleMarker([d.lat,d.lon],{radius:rad(d.votes),weight:2.5,fillOpacity:.9}).addTo(map);
+  m.bindTooltip(shortName(d)+" · "+d.votes+"표",{className:"tip",direction:"top",offset:[0,-rad(d.votes)]});
+  m.on("click",()=>pick(d.id,true));
+  mk[d.id]={m,ring};
+});
+function pins(fly){
+  const jb=cssv("--jb"),jn=cssv("--jn"),fg=cssv("--fg"),land=cssv("--land");
+  D.forEach(d=>{
+    const show=filter==="all"||d.region===filter, on=d.id===sel, c=d.region==="전북"?jb:jn;
+    mk[d.id].m.setStyle({color:on?fg:land,fillColor:c,opacity:show?1:.15,fillOpacity:show?.9:.12,weight:on?4:2.5});
+    mk[d.id].m.setRadius(rad(d.votes)+(on?3:0));
+    if(mk[d.id].ring) mk[d.id].ring.setStyle({color:c,opacity:show?.9:.12});
+    if(on){mk[d.id].m.bringToFront();mk[d.id].m.openTooltip();} else mk[d.id].m.closeTooltip();
+  });
+  if(fly){const d=D.find(x=>x.id===sel);map.flyTo([d.lat,d.lon],Math.max(map.getZoom(),10),{duration:.6});}
+}
+
+function card(){
+  const d=D.find(x=>x.id===sel), rank=byVotes.indexOf(d)+1;
+  document.getElementById("card").innerHTML=`
+    <div class="tag">${d.region==="전북"?"전라북도":"전남광주통합특별시"}</div>
+    <h2>${d.ko}</h2>
+    <div class="meta">${d.votes}표 · 11곳 중 ${rank}위 · 테슬라 표기 ${d.en}<br>좌표 ${d.lat.toFixed(5)}, ${d.lon.toFixed(5)}</div>
+    <div class="btns">
+      <a class="btn primary" href="${d.search}" target="_blank" rel="noopener">네이버 지도에서 검색</a>
+      <a class="btn" href="${d.coord}" target="_blank" rel="noopener">좌표로 열기</a>
+      <a class="btn" href="https://www.tesla.com/ko_KR/supercharger-voting?v=2&filters=candidate&bounds=${(d.lat+.08).toFixed(4)}%2C${(d.lon+.12).toFixed(4)}%2C${(d.lat-.08).toFixed(4)}%2C${(d.lon-.12).toFixed(4)}&zoom=12" target="_blank" rel="noopener">테슬라 투표 지도</a>
+    </div>`;
+}
+function rows(){
+  const el=document.getElementById("rows");el.innerHTML="";
+  byVotes.filter(d=>filter==="all"||d.region===filter).forEach(d=>{
+    const b=document.createElement("button");b.className="row";b.id="row-"+d.id;
+    if(d.id===sel)b.setAttribute("aria-current","true");
+    b.innerHTML=`<span class="rank">${byVotes.indexOf(d)+1}</span>
+      <span class="nm"><b>${d.ko}</b><small>${d.region==="전북"?"전라북도":"전남광주"}</small></span>
+      <span class="v"><i class="sw" style="background:${col(d.region)}"></i>${d.votes}</span>`;
+    b.addEventListener("click",()=>pick(d.id));el.appendChild(b);
+  });
+}
+function pick(id,fromMap){sel=id;render(!fromMap);}
+function render(fly){pins(fly);card();rows();}
+document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
+  filter=c.dataset.f;
+  document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===c?"true":"false"));
+  const cur=D.find(x=>x.id===sel);
+  if(filter!=="all"&&cur.region!==filter) sel=byVotes.find(d=>d.region===filter).id;
+  render();
+}));
+render(false);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>pins(false));
+</script>
+</body>
+</html>
