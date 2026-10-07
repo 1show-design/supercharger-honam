@@ -143,7 +143,7 @@ function shortName(d){const p=d.ko.replace(" 일대","").split(" ");return p.len
 
 const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const map=L.map("map",{scrollWheelZoom:true,zoomSnap:0.5}).fitBounds([[34.2,126.2],[36.05,127.75]],{padding:[10,10]});
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map); <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
 const mk={};
 D.forEach(d=>{
   const ring=false?L.circleMarker([d.lat,d.lon],{radius:rad(d.votes)+6,fill:false,weight:2.5,dashArray:"4 4",interactive:false}).addTo(map):null;
