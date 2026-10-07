@@ -5,4 +5,4 @@
 
 - 자료: tesla.com/ko_KR/supercharger-voting (2026.10.7 기준)
 - 한글 위치는 테슬라 영문 지명과 좌표로 판단한 값입니다.
-- 바탕 지도: © OpenStreetMap, © CARTO
+- 바탕 지도: © OpenStreetMap contributors
