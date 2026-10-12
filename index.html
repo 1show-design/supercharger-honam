@@ -85,12 +85,20 @@ header p{margin:0;color:var(--muted)}
 .leaflet-container{font-family:var(--sans)}
 .tip{font:500 13px var(--sans)}
 .legend{z-index:500}
+
+/* 정보방 홈으로 돌아가기 (26.10.12) */
+.home-link{display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:6px 12px 6px 9px;border:1px solid var(--rule);border-radius:999px;background:var(--panel);color:var(--fg);font-size:13px;font-weight:600;text-decoration:none}
+.home-link:hover{border-color:var(--muted)}
+.home-link svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.home-foot{max-width:1100px;margin:28px auto 36px;padding:0 16px;text-align:center;font-size:13px;color:var(--muted)}
+.home-foot a{color:var(--fg);font-weight:600}
 </style>
 </head>
 <body>
 
 <div class="wrap">
   <header>
+    <a class="home-link" href="https://1show-design.github.io/tesla-gwangju-jeonnam-info/#apps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>테슬라 광주·전남 오너 정보방 홈</a>
     <h1>전북·전남광주 슈퍼차저 후보지</h1>
     <p>테슬라 슈퍼차저 투표 지도의 2026년 3분기 후보 11곳 · 2026.10.12 기준</p>
   </header>
@@ -198,5 +206,6 @@ document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
 render(false);
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>pins(false));
 </script>
+<footer class="home-foot">테슬라 광주·전남 오너 정보방 회원이 만든 지도입니다 · <a href="https://1show-design.github.io/tesla-gwangju-jeonnam-info/">정보방 홈으로</a></footer>
 </body>
 </html>
